@@ -1,0 +1,23 @@
+{
+    "name": "sequelize-base-model",
+    "version": "1.0.0",
+    "author": {
+        "name": "Markus Gilg",
+        "email": "markusgilg@outlook.de"
+    },
+    "scripts": {
+        "start": "node ./index.js",
+        "test": "istanbul cover --config=.istanbul.yml ./node_modules/jasmine-node/bin/jasmine-node ./spec/",
+        "docu": "jsdoc -c ./.jsdoc.json -R ./README.md"
+    },
+    "dependencies": {
+        "sequelize": "^4.7.3"
+    },
+    "devDependencies": {
+        "pg": "^7.2.0",
+        "jasmine-node": "^1.14.5",
+        "istanbul": "^0.4.5",
+        "jsdoc": "^3.5.4",
+        "ink-docstrap": "^1.3.0"
+    }
+}

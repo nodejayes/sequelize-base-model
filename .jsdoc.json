@@ -1,0 +1,41 @@
+{
+    "plugins": [],
+    "recurseDepth": 10,
+    "source": {
+        "include": ["./module"],
+        "exclude": [],
+        "includePattern": ".+\\.js(doc|x)?$",
+        "excludePattern": "(^|\\/|\\\\)_"
+    },
+    "sourceType": "module",
+    "tags": {
+        "allowUnknownTags": true,
+        "dictionaries": ["jsdoc","closure"]
+    },
+    "opts": {
+        "template": "./node_modules/ink-docstrap/template",
+        "encoding": "utf8",
+        "destination": "./docs",
+        "tutorials": "./tutorials",
+        "recurse": true
+    },
+    "templates": {
+        "cleverLinks"           : true,
+        "monospaceLinks"        : true,
+        "systemName"            : "Sequelize Base Model",
+        "footer"                : "Author: Markus Gilg <markusgilg@outlook.de>",
+        "copyright"             : "Copyright Markus Gilg",
+        "includeDate"           : true,
+        "navType"               : "inline",
+        "theme"                 : "Cerulean",
+        "linenums"              : true,
+        "collapseSymbols"       : false,
+        "inverseNav"            : false,
+        "outputSourceFiles"     : false,
+        "outputSourcePath"      : false,
+        "dateFormat"            : "YYYY-MM-DD",
+        "syntaxTheme"           : "dark",
+        "sort"					: true,
+        "search"                : true 
+    }
+}

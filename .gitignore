@@ -1,3 +1,10 @@
+# Sonarqube
+.sonarlint/**
+
+coverage/**
+docs/**
+tutorials/**
+
 # Logs
 logs
 *.log

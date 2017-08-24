@@ -1,0 +1,7 @@
+.sonarlint/**
+.vscode/**
+node_modules/**
+coverage/**
+docs/**
+tutorials/**
+spec/**
