@@ -1,5 +1,5 @@
 describe('Database Modul Specs', function () {
-    const Database = require('./../module/database.module');
+    const DatabasePool = require('./../index').DatabasePool;
 
     let _db = null;
     let _validConfig = {
@@ -14,7 +14,7 @@ describe('Database Modul Specs', function () {
     };
 
     beforeEach(function () {
-        _db = new Database();
+        _db = new DatabasePool();
     });
 
     it('can connect and get instance', function () {

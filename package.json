@@ -1,6 +1,6 @@
 {
     "name": "sequelize-base-model",
-    "version": "1.0.0",
+    "version": "0.3.0",
     "description": "Holds Sequelize Model definitions and get them",
     "author": {
         "name": "Markus Gilg",
