@@ -1,5 +1,6 @@
 # Sonarqube
 .sonarlint/**
+.vscode/**
 
 coverage/**
 docs/**

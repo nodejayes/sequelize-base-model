@@ -3,7 +3,14 @@
 const PATH = require('path');
 const FS   = require('fs');
 
-let DEFS = {};
+/**
+ * Model Definitions
+ * 
+ * @private
+ * @memberof DefinitionCore
+ * @prop {object} _defs Sequelize Modeldefinitions by Name
+ */
+let _defs = {};
 
 /**
  * read all Sequelize Model definitions
@@ -23,7 +30,7 @@ const _readModels = function (path) {
         } else {
             if (entry.endsWith('.definition.js')) {
                 let definition = require(fullpath);
-                DEFS[definition.name] = definition;
+                _defs[definition.name] = definition;
             }
         }
     }
@@ -55,9 +62,9 @@ const _sync = function (model, force) {
 const _syncModels = function (models, force) {
     force = force === true ? true : false;
     if (!models || models.length < 1) {
-        for (let key in DEFS) {
-            if (DEFS.hasOwnProperty(key)) {
-                DEFS[key].sync({force: force});
+        for (let key in _defs) {
+            if (_defs.hasOwnProperty(key)) {
+                _defs[key].sync({force: force});
             }
         }
     } else {
@@ -84,7 +91,7 @@ class DefinitionCore {
      * @return {object} model
      */
     getModel(name) {
-        return DEFS[name] || null;
+        return _defs[name] || null;
     }
 
     /**
