@@ -1,6 +1,9 @@
 'use strict';
 
 const DefinitionCore = require('./definitioncore.module');
+const { getDefinitionPath } = require('./config.module');
+
+const CORE = {value:null};
 
 /**
  * gets the Model with the Name from Definition Core Modul
@@ -11,7 +14,10 @@ const DefinitionCore = require('./definitioncore.module');
  * @return {object} Model
  */
 const _getModel = function (name) {
-    return DefinitionCore.getModel(name);
+    if (CORE.value === null) {
+        CORE.value = new DefinitionCore(getDefinitionPath());
+    }
+    return CORE.value.getModel(name);
 };
 
 /**
@@ -58,12 +64,8 @@ class BaseModel {
      * @memberof BaseModel
      */
     constructor (modelname, joins) {
-        this.name = modelname.split('.')[1];
-        this.schema = modelname.split('.')[0];
-        this.model = _getModel(modelname);
-        if (this.schema !== null) {
-            this.model = this.model.schema(this.schema);
-        }
+        this.name = modelname;
+        this.model = _getModel(this.name);
         this.rawData = null;
         this.joins = null;
         if (joins && joins.length > 0) {
@@ -95,6 +97,9 @@ class BaseModel {
      */
     async load (filter) {
         try {
+            if (typeof filter !== 'object' || filter === null) {
+                filter = {};
+            }
             if (this.joins !== null) {
                 filter.include = this.joins;
             }

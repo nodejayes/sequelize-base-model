@@ -1,6 +1,9 @@
 'use strict';
 
 class SequelizeBasicModel {
+    static get Configuration () {
+        return require('./module/config.module');
+    }
     static get DatabasePool () {
         return require('./module/databasepool.module');
     }

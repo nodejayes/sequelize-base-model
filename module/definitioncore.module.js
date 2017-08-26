@@ -37,42 +37,6 @@ const _readModels = function (path) {
 };
 
 /**
- * Search the Model and do the sync
- * 
- * @private
- * @memberof DefinitionCore
- * @param {string} model 
- * @param {boolean} force 
- */
-const _sync = function (model, force) {
-    let tmp = DefinitionCore.getModel(model);
-    if (tmp !== null) {
-        tmp.sync({force: force});
-    }
-};
-
-/**
- * try to sync Models into a Database.
- * 
- * @private
- * @memberof DefinitionCore
- * @param {array} models Model Names to Sync 
- * @param {boolean} force drop the data
- */
-const _syncModels = function (models, force) {
-    force = force === true ? true : false;
-    if (!models || models.length < 1) {
-        for (let key in _defs) {
-            if (_defs.hasOwnProperty(key)) {
-                _defs[key].sync({force: force});
-            }
-        }
-    } else {
-        models.forEach(_sync);
-    }
-};
-
-/**
  * Definition Core Module
  * 
  * @class DefinitionCore
@@ -102,8 +66,25 @@ class DefinitionCore {
      * @param {array} models Model Names in a Array
      * @param {boolean} force delete existing Data !!!!!
      */
-    sync(models, force) {
-        _sync(models, force);
+    async sync(models, force) {
+        force = force === true ? true : false;
+        if (!models || models.length < 1) {
+            for (let key in _defs) {
+                if (_defs.hasOwnProperty(key)) {
+                    await _defs[key].sync({force: force});
+                }
+            }
+        } else {
+            let i = 0;
+            while (i < models.length) {
+                let model = models[i];
+                let tmp = _defs[model] || null;
+                if (tmp !== null) {
+                    await tmp.sync({force: force});
+                }
+                i++;
+            }
+        }
     }
 }
 module.exports = DefinitionCore;
