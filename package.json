@@ -19,10 +19,11 @@
         "sequelize": "^4.7.3"
     },
     "devDependencies": {
-        "pg": "^7.2.0",
-        "jasmine-node": "^1.14.5",
+        "ink-docstrap": "^1.3.0",
         "istanbul": "^0.4.5",
+        "jasmine-node": "^1.14.5",
         "jsdoc": "^3.5.4",
-        "ink-docstrap": "^1.3.0"
+        "pg": "^7.2.0",
+        "sonarqube-scanner": "^2.0.1"
     }
 }
