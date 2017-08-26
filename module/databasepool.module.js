@@ -11,10 +11,10 @@ const VALIDDIALECTS    = ['postgres', 'sqlite', 'mssql', 'mysql'];
  * the Configuration
  * 
  * @private
- * @memberof Database
- * @prop {object} _cfg Sequelize Configuration Object
+ * @memberof DatabasePool
+ * @const {object} CFG Sequelize Configuration Object
  */
-let _cfg = {};
+const CFG = {};
 
 /**
  * check a object for valid keys
@@ -40,7 +40,7 @@ const _checkKeys = function (obj, validKeys) {
  * allow only dialect and storage when storage is set when not allow the others and validate pool
  * 
  * @private
- * @memberof Database
+ * @memberof DatabasePool
  * @param {object} options Sequelize Connection Options
  */
 const _validateOptions = function (options) {
@@ -79,19 +79,18 @@ const _validateSequelizeConfig = function (cfg) {
 /**
  * Holds the Sequelize Instance
  * 
- * @class Database
+ * @class DatabasePool
  */
-class Database {
-    constructor () {}
-
+class DatabasePool {
     /**
      * add a Database Connection
      * 
+     * @static
      * @param {object} cfg Sequelize Connection Info
      * @param {string} name Name of the Connection
-     * @memberof Database
+     * @memberof DatabasePool
      */
-    addConnection (name, cfg) {
+    static addConnection (name, cfg) {
         if (typeof name !== 'string' || name.length < 1) {
             throw new Error('invalid connection name');
         }
@@ -101,7 +100,7 @@ class Database {
         if (typeof cfg !== 'object' || !_validateSequelizeConfig(cfg)) {
             throw new Error('invalid config object')
         }
-        _cfg[name] = {
+        CFG[name] = {
             configuration: cfg,
             connected: false,
             instance: null
@@ -111,52 +110,55 @@ class Database {
     /**
      * closes and remove a Database Connection
      * 
+     * @static
      * @param {string} name Name of the Connection
-     * @memberof Database
+     * @memberof DatabasePool
      */
-    removeConnection (name) {
-        if (!_cfg.hasOwnProperty(name)) {
+    static removeConnection (name) {
+        if (!CFG.hasOwnProperty(name)) {
             return;
         }
-        if (_cfg[name].instance !== null) {
-            _cfg[name].instance.close();
+        if (CFG[name].instance !== null) {
+            CFG[name].instance.close();
         }
-        delete _cfg[name];
+        delete CFG[name];
     }
 
     /**
      * connect to the Database
      * 
-     * @memberof Database
+     * @static
+     * @memberof DatabasePool
      * @param {string} name Name of the Connection
      */
-    connectTo (name) {
-        if (!_cfg.hasOwnProperty(name)) {
+    static connectTo (name) {
+        if (!CFG.hasOwnProperty(name)) {
             throw new Error('connection not found');
         }
-        if (!_cfg[name].connected || _cfg[name].instance === null) {
-            _cfg[name].instance = new Sequelize(
-                _cfg[name].configuration.dbname, 
-                _cfg[name].configuration.user, 
-                _cfg[name].configuration.password, 
-                _cfg[name].configuration.options
+        if (!CFG[name].connected || CFG[name].instance === null) {
+            CFG[name].instance = new Sequelize(
+                CFG[name].configuration.dbname, 
+                CFG[name].configuration.user, 
+                CFG[name].configuration.password, 
+                CFG[name].configuration.options
             );
         }
-        _cfg[name].connected = true;
+        CFG[name].connected = true;
     }
 
     /**
      * Get the current Database Instance
      * 
-     * @memberof Database
+     * @static
+     * @memberof DatabasePool
      * @param {string} name Name of the Connection
      * @returns {object} Sequelize Instance
      */
-    getInstance (name) {
-        if (!_cfg.hasOwnProperty(name)) {
+    static getInstance (name) {
+        if (!CFG.hasOwnProperty(name)) {
             throw new Error('connection not found');
         }
-        return _cfg[name].instance;
+        return CFG[name].instance;
     }
 }
-module.exports = Database;
+module.exports = DatabasePool;

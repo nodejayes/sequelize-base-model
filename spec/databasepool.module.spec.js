@@ -1,7 +1,6 @@
 describe('Database Modul Specs', function () {
     const DatabasePool = require('./../index').DatabasePool;
 
-    let _db = null;
     let _validConfig = {
         dbname: 'demo',
         user: 'postgres',
@@ -13,55 +12,53 @@ describe('Database Modul Specs', function () {
         }
     };
 
-    beforeEach(function () {
-        _db = new DatabasePool();
-    });
-
     it('can connect and get instance', function () {
-        _db.addConnection('connection1', _validConfig);
-        _db.connectTo('connection1');
-        expect(_db.getInstance('connection1')).not.toBe(null);
-        _db.removeConnection('connection1');
+        DatabasePool.addConnection('connection1', _validConfig);
+        DatabasePool.connectTo('connection1');
+        expect(DatabasePool.getInstance('connection1')).not.toBe(null);
+        DatabasePool.removeConnection('connection1');
     });
 
     it('can handle multiple connections', function () {
-        _db.addConnection('connection1', _validConfig);
-        _db.addConnection('connection2', _validConfig);
-        _db.connectTo('connection1');
-        _db.connectTo('connection2');
-        _db.removeConnection('connection1');
-        _db.removeConnection('connection2');
+        DatabasePool.addConnection('connection1', _validConfig);
+        DatabasePool.addConnection('connection2', _validConfig);
+        DatabasePool.connectTo('connection1');
+        DatabasePool.connectTo('connection2');
+        DatabasePool.removeConnection('connection1');
+        DatabasePool.removeConnection('connection2');
     });
 
     it('validate throws errors', function () {
         try {
-            _db.addConnection(null);
+            DatabasePool.addConnection(null);
             fail('no error throw!');
         } catch (err) { expect(err.message).toBe('invalid connection name'); }
         try {
-            _db.addConnection('');
+            DatabasePool.addConnection('');
             fail('no error throw!');
         } catch (err) { expect(err.message).toBe('invalid connection name'); }
         try { 
-            _db.addConnection('test', {});
+            DatabasePool.addConnection('test', {});
             fail('no error throw!');
         } catch (err) { expect(err.message).toBe('invalid config object'); }
         try { 
-            _db.addConnection('test', {});
+            DatabasePool.addConnection('test', {});
             fail('no error throw!');
         } catch (err) { expect(err.message).toBe('invalid config object'); }
     });
 
     it('not found throws error', function () {
-        _db.addConnection('connection1', _validConfig);
-        _db.addConnection('connection2', _validConfig);
+        DatabasePool.addConnection('connection1', _validConfig);
+        DatabasePool.addConnection('connection2', _validConfig);
         try { 
-            _db.connectTo('xyz');
+            DatabasePool.connectTo('xyz');
             fail('throws no error');
         } catch (err) { expect(err.message).toBe('connection not found'); }
         try { 
-            _db.getInstance('xyz');
+            DatabasePool.getInstance('xyz');
             fail('throws no error');
         } catch (err) { expect(err.message).toBe('connection not found'); }
+        DatabasePool.removeConnection('connection1');
+        DatabasePool.removeConnection('connection2');
     });
 });

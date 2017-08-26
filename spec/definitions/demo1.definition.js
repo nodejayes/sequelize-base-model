@@ -1,7 +1,7 @@
 'use strict';
 
 const Sequelize = require('sequelize');
-const Db        = require('./../../module/database.module');
+const Db        = require('./../../module/databasepool.module').getInstance('connection1');
 
 let schema = {
     id: {
@@ -32,7 +32,7 @@ let schema = {
     }
 };
 
-let model = DB.define('public.demo1', schema, {
+let model = Db.define('public.demo1', schema, {
     tableName: 'demo1',
     timestamps: false
 });

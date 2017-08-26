@@ -2,7 +2,7 @@
 
 class SequelizeBasicModel {
     static get DatabasePool () {
-        return require('./module/database.module');
+        return require('./module/databasepool.module');
     }
     static get DefinitionCore () {
         return require('./module/definitioncore.module');
