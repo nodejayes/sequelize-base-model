@@ -1,6 +1,6 @@
 {
     "name": "sequelize-base-model",
-    "version": "0.3.1",
+    "version": "0.3.2",
     "description": "Holds Sequelize Model definitions and get them",
     "repository": {
         "type": "git",
