@@ -1,5 +1,6 @@
 'use strict';
 
+const _ = require('underscore');
 const Sequelize = require('sequelize');
 const DefinitionCore = require('./definitioncore.module');
 const { getDefinitionPath } = require('./config.module');
@@ -63,6 +64,45 @@ const _constructRecursive = function (data) {
         }
         i++;
     }
+};
+
+/**
+ * rad all JSON Objects and remove the Model specific properties
+ * 
+ * @param {array} data 
+ */
+const _destructData = function (data) {
+    let tmp = [];
+    let i = 0;
+    while (i < data.length) {
+        let d = data[i];
+        let raw = _.clone(data[i].rawData);
+        if (d.instance._options.include && d.instance._options.include.length > 0) {
+            let i = 0;
+            while (i < d.instance._options.include.length) {
+                let key = d.instance._options.include[i].as;
+                if (d.instance[key] && d.instance[key].length > 0) {
+                    let myarray = [];
+                    let j = 0;
+                    while (j < raw[key].length) {
+                        let tmpJson = this.asJson([raw[key][j]]);
+                        myarray.push(tmpJson[0]);
+                        j++;
+                    }
+                    raw[key] = myarray;
+                } else if (typeof raw[key] === 'object') {
+                    let myobject = {};
+                    let tmpJson = this.asJson([raw[key]]);
+                    myobject = tmpJson[0];
+                    raw[key] = myobject;
+                }
+                i++;
+            }
+        }
+        tmp.push(raw);
+        i++;
+    }
+    return tmp;
 };
 
 /**
@@ -164,6 +204,21 @@ class BaseModel {
             _consoleOutput.bind(this)(err);
             return null;
         }
+    }
+
+    /**
+     * reads the JSON Structure of the Model recursive
+     * 
+     * @static
+     * @param {any} data 
+     * @returns 
+     * @memberof BaseModel
+     */
+    static asJson (data) {
+        if (!data || data.length < 1) {
+            return null;
+        }
+        return _destructData.bind(this)(data);
     }
 
     /**
