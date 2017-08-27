@@ -38,6 +38,34 @@ const _consoleOutput = function (err) {
 };
 
 /**
+ * create a instance of Model for each Sequelize Model that includes
+ * 
+ * @param {object} data Sequelize Model
+ */
+const _constructRecursive = function (data) {
+    let i = 0;
+    while (i < data._options.include.length) {
+        let key = data._options.include[i].as;
+        if (data[key] && data[key].length > 0) {
+            // handle Array
+            let j = 0;
+            while (j < data[key].length) {
+                let inst = new this.architects[key]();
+                inst.create(data[key][j]);
+                data[key][j] = inst;
+                j++;
+            }
+        } else {
+            // handle Object
+            let inst = new this.architects[key]();
+            inst.create(data[key]);
+            data[key] = inst;
+        }
+        i++;
+    }
+};
+
+/**
  * Base Model
  * 
  * @class BaseModel
@@ -56,10 +84,13 @@ class BaseModel {
         this.model = _getModel(this.name);
         this.instance = null;
         this.joins = null;
+        this.architects = {};
         if (joins && joins.length > 0) {
             joins.forEach(j => {
                 j.model = _getModel(j.model).schema(j.schema);
+                this.architects[j.as] = j.architect;
                 delete j.schema;
+                delete j.architect;
             });
             this.joins = joins;
         }
@@ -97,6 +128,9 @@ class BaseModel {
      */
     create (data) {
         let isnew = !(data instanceof Sequelize.Model);
+        if (!isnew && data._options.include) {
+            _constructRecursive.bind(this)(data);
+        }
         this.instance = !isnew ? data : this.model.build(data);
         this.instance.isNewRecord = isnew;
     }
