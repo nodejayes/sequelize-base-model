@@ -1,5 +1,6 @@
 'use strict';
 
+const Sequelize = require('sequelize');
 const DefinitionCore = require('./definitioncore.module');
 const { getDefinitionPath } = require('./config.module');
 
@@ -37,19 +38,6 @@ const _consoleOutput = function (err) {
 };
 
 /**
- * Fills dataValues of result in Data Object
- * 
- * @private
- * @memberof BaseModel
- * @param {object} d 1 Result Entry
- * @param {integer} i Index of Result Entry
- * @param {array} data Resultset
- */
-const _fillData = function (d, i, data) {
-    data[i] = d.dataValues;
-};
-
-/**
  * Base Model
  * 
  * @class BaseModel
@@ -66,7 +54,7 @@ class BaseModel {
     constructor (modelname, joins) {
         this.name = modelname;
         this.model = _getModel(this.name);
-        this.rawData = null;
+        this.instance = null;
         this.joins = null;
         if (joins && joins.length > 0) {
             joins.forEach(j => {
@@ -78,13 +66,39 @@ class BaseModel {
     }
 
     /**
+     * getter for Raw Data
+     * 
+     * @readonly
+     * @memberof BaseModel
+     */
+    get rawData () {
+        return this.instance !== null ? this.instance.dataValues : null;
+    }
+
+    /**
+     * set a Property of the Model Instance
+     * 
+     * @param {string} key Name of the Property to set
+     * @param {any} value Value to set
+     * @memberof BaseModel
+     */
+    setProperty (key, value) {
+        if (!this.instance || !this.instance[key]) {
+            throw new Error(`cannot set property ${key} in model ${this.name}`);
+        }
+        this.instance[key] = value;
+    }
+
+    /**
      * fill the Model with Data
      * 
      * @param {object} data the Object data
      * @memberof BaseModel
      */
     create (data) {
-        this.rawData = this.model.build(data).dataValues;
+        let isnew = !(data instanceof Sequelize.Model);
+        this.instance = !isnew ? data : this.model.build(data);
+        this.instance.isNewRecord = isnew;
     }
 
     /**
@@ -104,7 +118,13 @@ class BaseModel {
                 filter.include = this.joins;
             }
             let data = await this.model.findAll(filter);
-            data.forEach(_fillData.bind(this));
+            let i = 0;
+            while (i < data.length) {
+                let newInstance = new this.constructor();
+                newInstance.create(data[i]);
+                data[i] = newInstance;
+                i++;
+            }
             return data;
         } catch (err) {
             _consoleOutput.bind(this)(err);
@@ -119,15 +139,42 @@ class BaseModel {
      * @memberof BaseModel
      */
     async save () {
-        try {
-            await this.model.create(this.rawData, {
-                validate: true,
-                returning: false
-            });
-            this.rawData = this.model.build(this.rawData).dataValues;
-        } catch (err) {
-            _consoleOutput.bind(this)(err);
+        if (!this.instance) {
+            console.warn(`there is no instance for model ${this.name} save has no effect`);
+            return;
         }
+        if (this.instance.isNewRecord !== true) {
+            console.warn(`the instance is not a new Record update was invoked`);
+            this.update();
+            return;
+        }
+        await this.instance.save();
+    }
+
+    /**
+     * update a model
+     * 
+     * @param {?array} fields list of fields to update
+     * @memberof BaseModel
+     */
+    async update (fields) {
+        if (!this.instance) {
+            console.warn(`there is no instance for model ${this.name} update has no effect`);
+            return;
+        }
+        if (!fields || typeof fields === 'string' || fields.length < 1) {
+            fields = {};
+            let i = 0;
+            while (i < this.instance.attributes.length) {
+                let key = this.instance.attributes[i];
+                let hasChanged = this.instance._changed[key];
+                if (hasChanged) {
+                    fields[key] = this.instance.dataValues[key];
+                }
+                i++;
+            }
+        }
+        await this.instance.update(fields);
     }
 
     /**
@@ -137,12 +184,12 @@ class BaseModel {
      * @memberof BaseModel
      */
     async delete () {
-        try {
-            await this.model.destroy({where:{id:this.rawData.id}});
-            this.rawData = null;
-        } catch (err) {
-            _consoleOutput.bind(this)(err);
+        if (!this.instance) {
+            console.warn(`there is no instance for model ${this.name} delete has no effect`);
+            return;
         }
+        await this.instance.destroy();
+        this.instance = null;
     }
 }
 module.exports = BaseModel;
