@@ -39,70 +39,40 @@ const _consoleOutput = function (err) {
 };
 
 /**
- * create a instance of Model for each Sequelize Model that includes
+ * destruct the sequelize model data to raw object
  * 
- * @param {object} data Sequelize Model
+ * @param {object} obj 
  */
-const _constructRecursive = function (data) {
-    let i = 0;
-    while (i < data._options.include.length) {
-        let key = data._options.include[i].as;
-        if (data[key] && data[key].length > 0) {
-            // handle Array
-            let j = 0;
-            while (j < data[key].length) {
-                let inst = new this.architects[key]();
-                inst.create(data[key][j]);
-                data[key][j] = inst;
-                j++;
-            }
-        } else {
-            // handle Object
-            let inst = new this.architects[key]();
-            inst.create(data[key]);
-            data[key] = inst;
-        }
-        i++;
-    }
-};
-
-/**
- * rad all JSON Objects and remove the Model specific properties
- * 
- * @param {array} data 
- */
-const _destructData = function (data) {
-    let tmp = [];
-    let i = 0;
-    while (i < data.length) {
-        let d = data[i];
-        let raw = _.clone(data[i].rawData);
-        if (d.instance._options.include && d.instance._options.include.length > 0) {
-            let i = 0;
-            while (i < d.instance._options.include.length) {
-                let key = d.instance._options.include[i].as;
-                if (d.instance[key] && d.instance[key].length > 0) {
-                    let myarray = [];
-                    let j = 0;
-                    while (j < raw[key].length) {
-                        let tmpJson = this.asJson([raw[key][j]]);
-                        myarray.push(tmpJson[0]);
-                        j++;
+const _destructRaw = function (obj) {
+    try {
+        let tmp = {};
+        for (let key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                if (obj[key] instanceof Sequelize.Model) {
+                    tmp[key] = _destructRaw(obj[key].dataValues);
+                } else if (_.isArray(obj[key])) {
+                    let tmpArr = [];
+                    let i = 0;
+                    while (i < obj[key].length) {
+                        let arrItem = obj[key][i];
+                        if (arrItem instanceof Sequelize.Model) {
+                            tmpArr.push(_destructRaw(arrItem.dataValues));
+                        } else {
+                            tmpArr.push(arrItem);
+                        }
+                        i++;
                     }
-                    raw[key] = myarray;
-                } else if (typeof raw[key] === 'object') {
-                    let myobject = {};
-                    let tmpJson = this.asJson([raw[key]]);
-                    myobject = tmpJson[0];
-                    raw[key] = myobject;
+                    tmp[key] = tmpArr;
+                } else {
+                    tmp[key] = obj[key];
                 }
-                i++;
             }
         }
-        tmp.push(raw);
-        i++;
+        return tmp;
+    } catch (err) {
+        console.error(err);
+        return null;
     }
-    return tmp;
 };
 
 /**
@@ -126,12 +96,6 @@ class BaseModel {
         this.joins = null;
         this.architects = {};
         if (joins && joins.length > 0) {
-            joins.forEach(j => {
-                j.model = _getModel(j.model).schema(j.schema);
-                this.architects[j.as] = j.architect;
-                delete j.schema;
-                delete j.architect;
-            });
             this.joins = joins;
         }
     }
@@ -143,7 +107,7 @@ class BaseModel {
      * @memberof BaseModel
      */
     get rawData () {
-        return this.instance !== null ? this.instance.dataValues : null;
+        return this.instance !== null ? _destructRaw(this.instance.dataValues) : null;
     }
 
     /**
@@ -168,9 +132,6 @@ class BaseModel {
      */
     create (data) {
         let isnew = !(data instanceof Sequelize.Model);
-        if (!isnew && data._options.include) {
-            _constructRecursive.bind(this)(data);
-        }
         this.instance = !isnew ? data : this.model.build(data);
         this.instance.isNewRecord = isnew;
     }
@@ -204,21 +165,6 @@ class BaseModel {
             _consoleOutput.bind(this)(err);
             return null;
         }
-    }
-
-    /**
-     * reads the JSON Structure of the Model recursive
-     * 
-     * @static
-     * @param {any} data 
-     * @returns 
-     * @memberof BaseModel
-     */
-    static asJson (data) {
-        if (!data || data.length < 1) {
-            return null;
-        }
-        return _destructData.bind(this)(data);
     }
 
     /**

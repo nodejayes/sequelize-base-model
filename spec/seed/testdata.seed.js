@@ -3,24 +3,6 @@
 const PATH = require('path');
 const { BaseModel, DefinitionCore, DatabasePool, Configuration } = require('./../../index');
 
-class Right extends BaseModel {
-    constructor () {
-        super('right');
-    }
-}
-
-class Group extends BaseModel {
-    constructor () {
-        super('group');
-    }
-}
-
-class User extends BaseModel {
-    constructor () {
-        super('user');
-    }
-}
-
 let _cfg = {
     dbname: 'demo',
     user: 'postgres',
@@ -36,6 +18,13 @@ Configuration.setDefinitionPath(_defPath);
 DatabasePool.addConnection('demo', _cfg);
 DatabasePool.connectTo('demo');
 let _core = new DefinitionCore(_defPath);
+
+const Right = require('./../models/right.model');
+const Group = require('./../models/group.model');
+const User  = require('./../models/user.model');
+
+const LtUserGroups = require('./../definitions/lt_user_groups.definition');
+const LtGroupRights = require('./../definitions/lt_group_rights.definition');
 
 function newRight (obj) {
     let r = new Right();
@@ -86,12 +75,40 @@ function insertUsers () {
     ])
 }
 
+function insertLtUserGroups () {
+    return Promise.all([
+        LtUserGroups.create({user_id: 1, group_id: 1}),
+        LtUserGroups.create({user_id: 2, group_id: 2})
+    ]);
+}
+
+function insertLtGroupRights () {
+    return Promise.all([
+        LtGroupRights.create({group_id: 1, right_id: 1}),
+        LtGroupRights.create({group_id: 1, right_id: 2}),
+        LtGroupRights.create({group_id: 1, right_id: 3}),
+        LtGroupRights.create({group_id: 1, right_id: 4}),
+        LtGroupRights.create({group_id: 2, right_id: 1}),
+        LtGroupRights.create({group_id: 2, right_id: 2})
+    ]);
+}
+
 console.info('build schema');
-_core.sync(['group', 'user', 'right', 'ltgroupright'], true)
+_core.sync([
+    'right', 'group', 'user', 'project', 
+    'lt_group_rights', 'lt_user_groups', 'lt_user_projects'], true)
     .then(async () => {
         console.info('insert data');
         await insertRights();
         await insertGroups();
         await insertUsers();
+
+        await insertLtUserGroups();
+        await insertLtGroupRights();
+
+        let users = await new User().load({});
+        console.info(users[0].rawData);
+
+        process.exit(0);
     });
 

@@ -3,7 +3,7 @@
 const Sequelize = require('sequelize');
 const Db        = require('./../../module/databasepool.module').getInstance('demo');
 
-let model = Db.define('user', {
+let User = Db.define('user', {
     id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -19,4 +19,7 @@ let model = Db.define('user', {
     underscored: true
 });
 
-module.exports = model;
+User.belongsToMany(require('./group.definition'), {through: require('./lt_user_groups.definition')});
+User.belongsToMany(require('./project.definition'), {through: require('./lt_user_projects.definition')});
+
+module.exports = User;

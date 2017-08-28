@@ -3,9 +3,7 @@
 const Sequelize = require('sequelize');
 const Db        = require('./../../module/databasepool.module').getInstance('demo');
 
-
-
-let model = Db.define('group', {
+let Group = Db.define('group', {
     id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -18,4 +16,6 @@ let model = Db.define('group', {
     underscored: true
 });
 
-module.exports = model;
+Group.belongsToMany(require('./right.definition'), {through: require('./lt_group_rights.definition')});
+
+module.exports = Group;

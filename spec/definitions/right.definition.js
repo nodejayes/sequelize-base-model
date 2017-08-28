@@ -3,10 +3,7 @@
 const Sequelize = require('sequelize');
 const Db        = require('./../../module/databasepool.module').getInstance('demo');
 
-const Group = require('./group.definition');
-const GroupRight = require('./lt_group_right.definition');
-
-let model = Db.define('right', {
+let Right = Db.define('right', {
     id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -19,6 +16,4 @@ let model = Db.define('right', {
     underscored: true
 });
 
-model.belongsToMany(Group, { through: GroupRight });
-
-module.exports = model;
+module.exports = Right;
