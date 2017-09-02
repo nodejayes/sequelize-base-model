@@ -3,6 +3,7 @@
 const _ = require('underscore');
 const Sequelize = require('sequelize');
 const DefinitionCore = require('./definitioncore.module');
+const Interface = require('./interface.module');
 const { getDefinitionPath } = require('./config.module');
 
 const CORE = {value:null};
@@ -70,7 +71,51 @@ const _destructRaw = function (obj) {
         }
         return tmp;
     } catch (err) {
-        console.error(err);
+        _consoleOutput(err);
+        return null;
+    }
+};
+
+/**
+ * destruct the Model Instance with the Interface and build the Result Object from Interface Type.
+ * 
+ * @param {object} obj 
+ */
+const _destructInterface = function (obj) {
+    try {
+        let result = {};
+        let def = this.definition;
+        for (let key in def) {
+            if (def.hasOwnProperty(key)) {
+                if (def[key] instanceof Interface) {
+                    if (_.isArray(obj[key])) {
+                        let tmp = [];
+                        let i = 0;
+                        while (i < obj[key].length) {
+                            tmp.push(_destructInterface.bind(def[key])(obj[key][i]));
+                            i++;
+                        }
+                        result[key] = tmp;    
+                    } else {
+                        result[key] = _destructInterface.bind(def[key])(obj[key]);
+                    }
+                    continue;
+                }
+                if (!obj || !obj[key]) {
+                    result[def[key]] = null;
+                    continue;
+                }
+                if (obj[key] instanceof Sequelize.Model) {
+                    console.warn(`no interface definition found for property ${key}`);
+                    result[def[key]] = null;
+                    continue;    
+                }
+                result[def[key]] = obj[key];
+            }
+        }
+        return result;
+    } catch (err) {
+        _consoleOutput(err);
         return null;
     }
 };
@@ -89,7 +134,7 @@ class BaseModel {
      * @param {?string} schema name of a schema
      * @memberof BaseModel
      */
-    constructor (modelname, joins) {
+    constructor (modelname, joins, interfaceFilter) {
         this.name = modelname;
         this.model = _getModel(this.name);
         this.instance = null;
@@ -98,6 +143,7 @@ class BaseModel {
         if (joins && joins.length > 0) {
             this.joins = joins;
         }
+        this.interfaceFilter = interfaceFilter || null;
     }
 
     /**
@@ -108,6 +154,16 @@ class BaseModel {
      */
     get rawData () {
         return this.instance !== null ? _destructRaw(this.instance.dataValues) : null;
+    }
+
+    /**
+     * get the Data by Interface Filter
+     * 
+     * @readonly
+     * @memberof BaseModel
+     */
+    get interface () {
+        return this.instance !== null && this.interfaceFilter !== null ? _destructInterface.bind(this.interfaceFilter)(this.instance.dataValues) : null;
     }
 
     /**
