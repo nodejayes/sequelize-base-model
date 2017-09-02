@@ -193,6 +193,30 @@ class BaseModel {
     }
 
     /**
+     * change the current schema of the model
+     * 
+     * @param {string} schema 
+     */
+    setSchema (schema) {
+        if (!_.isString(schema) || schema.length < 1 || !this.model) {
+            throw new Error(`invalid parameter schema ${schema}`);
+        }
+        this.model = this.model.schema(schema);
+    }
+
+    /**
+     * redefine the joins only necessary when reset the schema
+     * 
+     * @param {array} joins 
+     */
+    setJoins (joins) {
+        if (!_.isArray(joins) || joins.length < 1) {
+            throw new Error('invalid parameter joins');
+        }
+        this.joins = joins;
+    }
+
+    /**
      * Load Model Data from Database uses the Filter
      * 
      * @async
