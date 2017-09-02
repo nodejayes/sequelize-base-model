@@ -108,6 +108,7 @@ _core.sync([
 
         let users = await new User().load({});
         console.info(users[0].rawData);
+        console.info(users[0].interface);
 
         process.exit(0);
     });

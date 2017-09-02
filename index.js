@@ -13,5 +13,8 @@ class SequelizeBasicModel {
     static get BaseModel () {
         return require('./module/basemodel.module');
     }
+    static get Interface () {
+        return require('./module/interface.module');
+    }
 }
 module.exports = SequelizeBasicModel;
