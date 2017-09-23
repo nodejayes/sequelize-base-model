@@ -3,7 +3,7 @@
 const Sequelize = require('sequelize');
 
 const VALIDMAINKEYS    = ['dbname', 'user', 'password', 'options'];
-const VALIDOPTIONSKEYS = ['dialect', 'host', 'port', 'storage', 'pool'];
+const VALIDOPTIONSKEYS = ['dialect', 'host', 'port', 'pool', 'logging', 'define', 'storage'];
 const VALIDPOOLKEYS    = ['min', 'max', 'idle'];
 const VALIDDIALECTS    = ['postgres', 'sqlite', 'mssql', 'mysql'];
 
@@ -48,7 +48,7 @@ const _validateOptions = function (options) {
         return false;
     }
     if (typeof options.storage === 'undefined') {
-        return _checkKeys(options, ['host', 'port', 'dialect', 'pool']) &&
+        return _checkKeys(options, VALIDOPTIONSKEYS.slice(0, -1)) &&
                typeof options.host === 'string' && options.host.length > 0 &&
                !isNaN(options.port) && VALIDDIALECTS.indexOf(options.dialect) !== -1 &&
                (typeof options.pool !== 'undefined' ? _hasValidPool(options.pool) : true);
