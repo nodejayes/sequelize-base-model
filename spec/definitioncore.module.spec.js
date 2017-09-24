@@ -1,10 +1,12 @@
+const ASSERT = require('assert');
+
 describe('Definition Core Specs', function () {
     const PATH = require('path');
     const DefinitionCore = require('./../index').DefinitionCore;
     const DatabasePool = require('./../index').DatabasePool;
 
-    beforeEach(function () {
-        DatabasePool.addConnection('connection1', {
+    before(function () {
+        DatabasePool.addConnection('demo', {
             dbname: 'demo',
             user: 'postgres',
             password: 'postgres',
@@ -14,27 +16,27 @@ describe('Definition Core Specs', function () {
                 port: 5432
             }
         });
-        DatabasePool.connectTo('connection1');
+        DatabasePool.connectTo('demo');
     });
 
     afterEach(function () {
-        DatabasePool.removeConnection('connection1');
+        DatabasePool.removeConnection('demo');
     });
 
     it('can setup cache', function () {
         let _core = new DefinitionCore(PATH.join(__dirname, 'definitions'));
-        expect(_core).not.toBe(null);
+        ASSERT.notEqual(_core, null, 'Definition Core is null');
     });
 
     it('can find model', function () {
         let _core = new DefinitionCore(PATH.join(__dirname, 'definitions'));
         let selectedModel = _core.getModel('public.demo1');
-        expect(selectedModel).not.toBe(null);
+        ASSERT.notEqual(selectedModel, null, 'Testmodel not exists');
     });
 
     it('null model when not found', function () {
         let _core = new DefinitionCore(PATH.join(__dirname, 'definitions'));
         let selectedModel = _core.getModel('xyz');
-        expect(selectedModel).toBe(null);
+        ASSERT.equal(selectedModel, null, 'not exist model is found');
     });
 });

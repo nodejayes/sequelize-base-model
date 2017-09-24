@@ -19,7 +19,7 @@ describe('Interface Specs', function () {
     });
 
     afterEach(function () {
-        DatabasePool.removeConnection('test');
+        // DatabasePool.removeConnection('test');
     });
 
     it('define Interface', function (done) {

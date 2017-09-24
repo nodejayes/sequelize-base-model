@@ -1,3 +1,5 @@
+const ASSERT = require('assert');
+
 describe('Database Modul Specs', function () {
     const DatabasePool = require('./../index').DatabasePool;
 
@@ -15,7 +17,7 @@ describe('Database Modul Specs', function () {
     it('can connect and get instance', function () {
         DatabasePool.addConnection('connection1', _validConfig);
         DatabasePool.connectTo('connection1');
-        expect(DatabasePool.getInstance('connection1')).not.toBe(null);
+        ASSERT.notEqual(DatabasePool.getInstance('connection1'), null, 'test connection is null');
         DatabasePool.removeConnection('connection1');
     });
 
@@ -31,20 +33,20 @@ describe('Database Modul Specs', function () {
     it('validate throws errors', function () {
         try {
             DatabasePool.addConnection(null);
-            fail('no error throw!');
-        } catch (err) { expect(err.message).toBe('invalid connection name'); }
+            ASSERT.fail('no error throw!');
+        } catch (err) { ASSERT.equal(err.message, 'invalid connection name', ''); }
         try {
             DatabasePool.addConnection('');
-            fail('no error throw!');
-        } catch (err) { expect(err.message).toBe('invalid connection name'); }
+            ASSERT.fail('no error throw!');
+        } catch (err) { ASSERT.equal(err.message, 'invalid connection name', ''); }
         try { 
             DatabasePool.addConnection('test', {});
-            fail('no error throw!');
-        } catch (err) { expect(err.message).toBe('invalid config object'); }
+            ASSERT.fail('no error throw!');
+        } catch (err) { ASSERT.equal(err.message, 'invalid config object', ''); }
         try { 
             DatabasePool.addConnection('test', {});
-            fail('no error throw!');
-        } catch (err) { expect(err.message).toBe('invalid config object'); }
+            ASSERT.fail('no error throw!');
+        } catch (err) { ASSERT.equal(err.message, 'invalid config object', ''); }
     });
 
     it('not found throws error', function () {
@@ -52,12 +54,12 @@ describe('Database Modul Specs', function () {
         DatabasePool.addConnection('connection2', _validConfig);
         try { 
             DatabasePool.connectTo('xyz');
-            fail('throws no error');
-        } catch (err) { expect(err.message).toBe('connection not found'); }
+            ASSERT.fail('throws no error');
+        } catch (err) { ASSERT.equal(err.message, 'connection not found', ''); }
         try { 
             DatabasePool.getInstance('xyz');
-            fail('throws no error');
-        } catch (err) { expect(err.message).toBe('connection not found'); }
+            ASSERT.fail('throws no error');
+        } catch (err) { ASSERT.equal(err.message, 'connection not found', ''); }
         DatabasePool.removeConnection('connection1');
         DatabasePool.removeConnection('connection2');
     });
